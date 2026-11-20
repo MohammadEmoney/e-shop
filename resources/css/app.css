@@ -1,0 +1,36 @@
+@import 'tailwindcss';
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* TailAdmin color tokens */
+    --color-primary: #3056d3;
+    --color-primary-dark: #2548bd;
+    --color-secondary: #80caee;
+    --color-success: #219653;
+    --color-success-light: #dff0e9;
+    --color-danger: #d34040;
+    --color-danger-light: #fbeae9;
+    --color-warning: #ffa70b;
+    --color-warning-light: #fff5e6;
+    --color-info: #2c9bbe;
+    --color-info-light: #e7f2f8;
+    --color-dark: #1c2434;
+    --color-stroke: #e2e8f0;
+    --color-form-stroke: #e0e0e0;
+    --color-gray-2: #eff4fb;
+    --color-gray-3: #fafafa;
+    --color-gray-4: #f3f6fa;
+    --color-gray-5: #eef2f7;
+    --color-gray-6: #99a2b7;
+
+    /* TailAdmin custom shadows & font sizes */
+    --shadow-1: 0px 1px 3px 0px rgba(166, 175, 195, 0.40);
+    --shadow-card: 0px 1px 3px 0px rgba(166, 175, 195, 0.40);
+    --text-title-md: 2rem;
+    --text-title-sm: 1.25rem;
+    --text-body: 1rem;
+}
