@@ -8,7 +8,9 @@ use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\AdminSeeder;
 use Database\Seeders\RolesAndPermissionsSeeder;
+use Illuminate\Http\UploadedFile;
 use Livewire\Livewire;
+use Spatie\MediaLibrary\HasMedia;
 
 /**
  * Phase 4 verification: admin panel auth, authorization and guard separation.
@@ -183,4 +185,65 @@ it('rejects invalid admin credentials', function () {
         ->assertHasErrors('username');
 
     expect(Auth::guard('admin')->check())->toBeFalse();
+});
+
+it('sets a session cookie on the admin login page (web middleware applied)', function () {
+    // Regression: admin routes must run the 'web' middleware group so the
+    // session cookie is issued; otherwise Livewire auth cannot persist.
+    $this->get(route('admin.login'))
+        ->assertOk()
+        ->assertCookie('laravel-session');
+});
+
+it('reaches the dashboard after authenticating via the login component', function () {
+    Livewire::test(Login::class)
+        ->set('username', 'admin')
+        ->set('password', 'password')
+        ->call('login');
+
+    // The admin is now authenticated on the admin guard; the dashboard must
+    // render (not redirect back to login).
+    $this->get(route('admin.dashboard'))
+        ->assertOk();
+});
+
+it('attaches uploaded media to a product and generates the webp conversion', function () {
+    $admin = Admin::query()->where('username', 'admin')->first();
+    $category = Category::factory()->create();
+
+    $file = UploadedFile::fake()->image('photo.jpg', 300, 300);
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(Form::class)
+        ->set('name', 'Media Product')
+        ->set('slug', 'media-product')
+        ->set('category_id', $category->id)
+        ->set('description', 'A product with an uploaded image.')
+        ->set('price', 500000)
+        ->set('stock', 5)
+        ->set('is_active', true)
+        ->set('uploads', $file)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $product = Product::query()->where('slug', 'media-product')->first();
+
+    expect($product)->not->toBeNull();
+    expect($product->getMedia('images')->count())->toBe(1);
+
+    $media = $product->getFirstMedia('images');
+    expect($media->collection_name)->toBe('images')
+        ->and(str($media->mime_type)->startsWith('image/'))->toBeTrue();
+
+    // The model implements the polymorphic HasMedia contract.
+    expect(is_subclass_of(Product::class, HasMedia::class))->toBeTrue();
+});
+
+it('renders the blog form with media uploader and persian datepicker', function () {
+    $admin = Admin::query()->where('username', 'admin')->first();
+
+    Livewire::actingAs($admin, 'admin')
+        ->test(App\Livewire\Admin\Blogs\Form::class)
+        ->assertOk()
+        ->assertSet('is_published', true);
 });

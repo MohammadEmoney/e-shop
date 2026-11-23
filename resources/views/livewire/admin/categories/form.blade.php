@@ -21,14 +21,15 @@
             </div>
 
             <div>
-                <label class="mb-2.5 block text-sm font-medium text-dark">دسته مادر</label>
-                <select wire:model="parent_id"
-                        class="w-full rounded-lg border border-form-stroke bg-white px-5 py-3 text-sm outline-none focus:border-primary">
-                    <option value="">بدون دسته مادر</option>
+                <x-select2
+                    :model="'parent_id'"
+                    label="دسته مادر"
+                    placeholder="بدون دسته مادر"
+                >
                     @foreach ($this->parentOptions as $option)
-                        <option value="{{ $option->id }}">{{ $option->name }}</option>
+                        <option value="{{ $option->id }}" @selected((string) $parent_id === (string) $option->id)>{{ $option->name }}</option>
                     @endforeach
-                </select>
+                </x-select2>
                 @error('parent_id') <p class="mt-1 text-sm text-danger">{{ $message }}</p> @enderror
             </div>
 
@@ -52,6 +53,40 @@
                 <input type="checkbox" wire:model="is_active" class="h-4 w-4">
                 فعال
             </label>
+        </div>
+
+        {{-- Options (variant dimensions) attached to this category --}}
+        <div class="mt-6">
+            <h3 class="mb-1 text-base font-semibold text-dark">آپشن‌ها (ابعاد تنوع)</h3>
+            <p class="mb-3 text-xs text-[#99A2B7]">آپشن‌های انتخابی هنگام ساخت محصول در این دسته نمایش داده می‌شوند.</p>
+
+            @forelse ($this->availableOptions as $option)
+                <label class="mb-1.5 flex cursor-pointer items-center gap-2 text-sm text-dark">
+                    <input type="checkbox" wire:model="selectedOptions" value="{{ $option->id }}" class="h-4 w-4">
+                    {{ $option->name }}
+                    <span class="text-xs text-[#99A2B7]">({{ $option->values_count ?? $option->values()->count() }} مقدار)</span>
+                </label>
+            @empty
+                <p class="text-sm text-[#99A2B7]">هنوز آپشنی تعریف نشده است.</p>
+            @endforelse
+            @error('selectedOptions') <p class="mt-1 text-sm text-danger">{{ $message }}</p> @enderror
+        </div>
+
+        {{-- Attributes (specifications) attached to this category --}}
+        <div class="mt-6">
+            <h3 class="mb-1 text-base font-semibold text-dark">ویژگی‌ها (مشخصات)</h3>
+            <p class="mb-3 text-xs text-[#99A2B7]">ویژگی‌های انتخابی هنگام ساخت محصول در این دسته نمایش داده می‌شوند.</p>
+
+            @forelse ($this->availableAttributes as $attribute)
+                <label class="mb-1.5 flex cursor-pointer items-center gap-2 text-sm text-dark">
+                    <input type="checkbox" wire:model="selectedAttributes" value="{{ $attribute->id }}" class="h-4 w-4">
+                    {{ $attribute->name }}
+                    <span class="text-xs text-[#99A2B7]">({{ $attribute->values_count ?? $attribute->values()->count() }} مقدار)</span>
+                </label>
+            @empty
+                <p class="text-sm text-[#99A2B7]">هنوز ویژگی‌ای تعریف نشده است.</p>
+            @endforelse
+            @error('selectedAttributes') <p class="mt-1 text-sm text-danger">{{ $message }}</p> @enderror
         </div>
 
         <div class="mt-6 flex justify-end gap-3">

@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\InteractsWithMediaCollections;
 use Database\Factories\CategoryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
 /**
  * @property int $id
@@ -20,10 +24,21 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $sort_order
  */
 #[Fillable(['parent_id', 'name', 'slug', 'description', 'image', 'is_active', 'sort_order'])]
-class Category extends Model
+class Category extends Model implements HasMedia
 {
     /** @use HasFactory<CategoryFactory> */
     use HasFactory;
+
+    use InteractsWithMedia;
+    use InteractsWithMediaCollections;
+
+    /**
+     * Register the media collections (images, videos, files) for this model.
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->configureMediaCollections();
+    }
 
     /**
      * Get the attributes that should be cast.
@@ -65,5 +80,27 @@ class Category extends Model
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
+    }
+
+    /**
+     * Options (variant dimensions) that apply to this category.
+     *
+     * @return BelongsToMany<ProductOption, $this>
+     */
+    public function options(): BelongsToMany
+    {
+        return $this->belongsToMany(ProductOption::class, 'category_product_option')
+            ->withTimestamps();
+    }
+
+    /**
+     * Attributes (specifications) that apply to this category.
+     *
+     * @return BelongsToMany<ProductAttribute, $this>
+     */
+    public function attributes(): BelongsToMany
+    {
+        return $this->belongsToMany(ProductAttribute::class, 'category_product_attribute')
+            ->withTimestamps();
     }
 }

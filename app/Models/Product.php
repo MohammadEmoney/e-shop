@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\InteractsWithMediaCollections;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
 /**
  * @property int $id
@@ -46,10 +49,21 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
     'embedding',
     'search_text',
 ])]
-class Product extends Model
+class Product extends Model implements HasMedia
 {
     /** @use HasFactory<ProductFactory> */
     use HasFactory;
+
+    use InteractsWithMedia;
+    use InteractsWithMediaCollections;
+
+    /**
+     * Register the media collections (images, videos, files) for this model.
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->configureMediaCollections();
+    }
 
     /**
      * Get the attributes that should be cast.
@@ -87,6 +101,45 @@ class Product extends Model
     public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class);
+    }
+
+    /**
+     * The attribute values (dimensions) this product uses to build variants.
+     *
+     * @return BelongsToMany<ProductAttributeValue, $this>
+     */
+    public function attributeValues(): BelongsToMany
+    {
+        return $this->belongsToMany(ProductAttributeValue::class, 'product_attribute_value_product')
+            ->withTimestamps();
+    }
+
+    /**
+     * The attributes (e.g. color, size) this product uses.
+     *
+     * @return BelongsToMany<ProductAttribute, $this>
+     */
+    public function attributes(): BelongsToMany
+    {
+        return $this->belongsToMany(ProductAttribute::class, 'product_attribute_value_product');
+    }
+
+    /**
+     * Per-product measurement configuration (for uncountable products).
+     *
+     * @return HasMany<ProductMeasurement, $this>
+     */
+    public function measurements(): HasMany
+    {
+        return $this->hasMany(ProductMeasurement::class);
+    }
+
+    /**
+     * Whether the product is sold by measurement (not countable).
+     */
+    public function isMeasurable(): bool
+    {
+        return $this->measurements()->exists();
     }
 
     /**

@@ -19,7 +19,10 @@
                 ['route' => 'admin.dashboard', 'label' => 'داشبورد', 'perm' => 'dashboard.view', 'pattern' => 'admin.dashboard'],
                 ['route' => 'admin.products', 'label' => 'محصولات', 'perm' => 'products.view', 'pattern' => 'admin.products*'],
                 ['route' => 'admin.categories', 'label' => 'دسته‌بندی‌ها', 'perm' => 'categories.view', 'pattern' => 'admin.categories*'],
+                ['route' => 'admin.attributes', 'label' => 'ویژگی‌ها', 'perm' => 'attributes.view', 'pattern' => 'admin.attributes*'],
+                ['route' => 'admin.options', 'label' => 'آپشن‌ها', 'perm' => 'options.view', 'pattern' => 'admin.options*'],
                 ['route' => 'admin.orders', 'label' => 'سفارش‌ها', 'perm' => 'orders.view', 'pattern' => 'admin.orders*'],
+                ['route' => 'admin.blogs', 'label' => 'مقالات', 'perm' => 'blogs.view', 'pattern' => 'admin.blogs*'],
                 ['route' => 'admin.admins', 'label' => 'مدیران', 'perm' => 'admins.view', 'pattern' => 'admin.admins*'],
                 ['route' => 'admin.settings', 'label' => 'تنظیمات', 'perm' => 'settings.view', 'pattern' => 'admin.settings*'],
             ];

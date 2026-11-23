@@ -11,3 +11,8 @@ parameters:
         - routes/
 
     level: 7
+
+    ignoreErrors:
+        # Medialibrary Pro (not installed) class referenced in the published config.
+        - identifier: class.notFound
+          path: config/media-library.php

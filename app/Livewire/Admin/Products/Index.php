@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Products;
 
+use App\Livewire\Concerns\DispatchesToasts;
 use App\Models\Product;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
@@ -15,6 +16,7 @@ use Livewire\WithPagination;
 #[Title('مدیریت محصولات')]
 class Index extends Component
 {
+    use DispatchesToasts;
     use WithPagination;
 
     public string $search = '';
@@ -56,7 +58,7 @@ class Index extends Component
 
         Product::query()->findOrFail($productId)->delete();
 
-        session()->flash('status', 'محصول حذف شد.');
+        $this->flashToast('محصول حذف شد.');
     }
 
     public function render(): string

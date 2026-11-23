@@ -2,9 +2,12 @@
 
 namespace App\Livewire\Admin\Categories;
 
+use App\Livewire\Concerns\AuthorizesAdmin;
+use App\Livewire\Concerns\DispatchesToasts;
 use App\Models\Category;
+use App\Models\ProductAttribute;
+use App\Models\ProductOption;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -14,6 +17,9 @@ use Livewire\Component;
 #[Title('دسته‌بندی')]
 class Form extends Component
 {
+    use AuthorizesAdmin;
+    use DispatchesToasts;
+
     public ?Category $category = null;
 
     public string $name = '';
@@ -28,6 +34,20 @@ class Form extends Component
 
     public bool $is_active = true;
 
+    /**
+     * IDs of the options (variant dimensions) attached to this category.
+     *
+     * @var array<int>
+     */
+    public array $selectedOptions = [];
+
+    /**
+     * IDs of the attributes (specifications) attached to this category.
+     *
+     * @var array<int>
+     */
+    public array $selectedAttributes = [];
+
     public function mount(?Category $category = null): void
     {
         $this->authorizeAdmin($category ? 'categories.edit' : 'categories.create');
@@ -41,13 +61,9 @@ class Form extends Component
             $this->description = $category->description ?? '';
             $this->sort_order = $category->sort_order;
             $this->is_active = $category->is_active;
-        }
-    }
 
-    public function authorizeAdmin(string $permission): void
-    {
-        if (! Auth::guard('admin')->user()?->hasPermissionTo($permission)) {
-            abort(403, 'دسترسی غیرمجاز');
+            $this->selectedOptions = $category->options()->pluck('product_options.id')->all();
+            $this->selectedAttributes = $category->attributes()->pluck('product_attributes.id')->all();
         }
     }
 
@@ -69,17 +85,54 @@ class Form extends Component
             'description' => ['nullable', 'string'],
             'sort_order' => ['required', 'integer', 'min:0'],
             'is_active' => ['boolean'],
+            'selectedOptions' => ['array'],
+            'selectedOptions.*' => ['exists:product_options,id'],
+            'selectedAttributes' => ['array'],
+            'selectedAttributes.*' => ['exists:product_attributes,id'],
         ]);
 
         if ($this->category) {
             $this->category->update($data);
+            $category = $this->category;
         } else {
-            Category::create($data);
+            $category = Category::create($data);
         }
 
-        session()->flash('status', 'دسته‌بندی ذخیره شد.');
+        // Attach the variant options and specification attributes for this category.
+        $category->options()->sync($data['selectedOptions'] ?? []);
+        $category->attributes()->sync($data['selectedAttributes'] ?? []);
+
+        $this->flashToast('دسته‌بندی ذخیره شد.');
 
         $this->redirectRoute('admin.categories', navigate: true);
+    }
+
+    /**
+     * Options (variant dimensions) available to attach to a category.
+     *
+     * @return Collection<int, ProductOption>
+     */
+    public function getAvailableOptionsProperty(): Collection
+    {
+        return ProductOption::query()
+            ->withCount('values')
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * Attributes (specifications) available to attach to a category.
+     *
+     * @return Collection<int, ProductAttribute>
+     */
+    public function getAvailableAttributesProperty(): Collection
+    {
+        return ProductAttribute::query()
+            ->withCount('values')
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
     }
 
     /**

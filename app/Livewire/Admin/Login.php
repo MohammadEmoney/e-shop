@@ -52,7 +52,9 @@ class Login extends Component
 
         $this->regenerateSession();
 
-        $this->redirect(route('admin.dashboard'), navigate: true);
+        // Full-page redirect (NOT Livewire SPA navigation) so the freshly
+        // regenerated session cookie is sent with the next request.
+        $this->redirect(route('admin.dashboard'));
     }
 
     /**

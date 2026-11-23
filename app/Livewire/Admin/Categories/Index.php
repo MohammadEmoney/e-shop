@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Categories;
 
+use App\Livewire\Concerns\DispatchesToasts;
 use App\Models\Category;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -14,6 +15,8 @@ use Livewire\Component;
 #[Title('مدیریت دسته‌بندی‌ها')]
 class Index extends Component
 {
+    use DispatchesToasts;
+
     public function authorizeAdmin(string $permission): void
     {
         if (! Auth::guard('admin')->user()?->hasPermissionTo($permission)) {
@@ -40,7 +43,7 @@ class Index extends Component
 
         Category::query()->findOrFail($categoryId)->delete();
 
-        session()->flash('status', 'دسته‌بندی حذف شد.');
+        $this->flashToast('دسته‌بندی حذف شد.');
     }
 
     public function render(): string
